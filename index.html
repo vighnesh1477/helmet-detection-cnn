@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Helmet Detection CNN — Complete Project Code (PyTorch)</title>
+  <meta name="description" content="All source codes from the Helmet vs No-Helmet CNN tutorial — dataset check, split, model, training and real-time webcam testing. One-click copy for every code block." />
+  <meta name="theme-color" content="#070b16" />
+  <meta property="og:title" content="Helmet Detection CNN — Complete Project Code" />
+  <meta property="og:description" content="Copy every code from the PyTorch helmet detection tutorial — from 1st Code to Testing Code." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Cdefs%3E%3ClinearGradient%20id='g'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20offset='0'%20stop-color='%2322d3ee'/%3E%3Cstop%20offset='1'%20stop-color='%23818cf8'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath%20d='M12%202.5a7.5%207.5%200%200%200-7.5%207.5v3.5h15V10A7.5%207.5%200%200%200%2012%202.5Z'%20fill='url(%23g)'/%3E%3Crect%20x='2'%20y='15'%20width='20'%20height='3.5'%20rx='1.75'%20fill='url(%23g)'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a href="#overview" class="brand" aria-label="Helmet CNN home">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <defs>
+              <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#818cf8"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 2.5a7.5 7.5 0 0 0-7.5 7.5v3.5h15V10A7.5 7.5 0 0 0 12 2.5Z" fill="url(#lg)"/>
+            <rect x="2" y="15" width="20" height="3.5" rx="1.75" fill="url(#lg)"/>
+          </svg>
+        </span>
+        <span class="brand-text">Helmet<span class="grad-text">CNN</span></span>
+      </a>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#codes">Codes</a></li>
+        <li><a href="#how-to-run">How to Run</a></li>
+        <li><a href="#notes">Fix Errors</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero" id="overview">
+    <div class="hero-bg" aria-hidden="true">
+      <span class="orb orb-1"></span><span class="orb orb-2"></span><span class="orb orb-3"></span>
+      <span class="grid-lines"></span>
+    </div>
+    <div class="container hero-inner">
+      <span class="pill reveal">
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>
+        PyTorch Deep Learning Project — Full Source Code
+      </span>
+      <h1 class="reveal">Helmet Detection <span class="grad-text">with CNN</span></h1>
+      <p class="hero-sub reveal">
+        All the codes from my YouTube tutorial — dataset check, train/val/test split, CNN model,
+        training and real-time webcam testing. Click <b>Copy</b> on any code block and paste it
+        straight into your notebook.
+      </p>
+      <div class="hero-actions reveal">
+        <a href="#codes" class="btn btn-primary">
+          <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m0 0 6-6m-6 6-6-6"/></svg>
+          Get the Codes
+        </a>
+        <!-- ============================================================
+             PUT YOUR YOUTUBE VIDEO LINK BELOW:
+             replace the  #  in  href="#"  with your video URL,
+             e.g. href="https://youtu.be/xxxxxxxxxxx"
+             ============================================================ -->
+        <a href="#" class="btn btn-ghost" id="ytLink">
+          <svg class="i" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5Z"/></svg>
+          Watch on YouTube
+        </a>
+      </div>
+      <div class="stats stagger reveal-group">
+        <div class="stat reveal"><b>3</b><span>Classes</span></div>
+        <div class="stat reveal"><b>15</b><span>Epochs</span></div>
+        <div class="stat reveal"><b>128×128</b><span>Input Size</span></div>
+        <div class="stat reveal"><b>70/15/15</b><span>Split Ratio</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ PIPELINE ============ -->
+    <section class="section" id="pipeline">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">How it works</span>
+          <h2>The Project Pipeline</h2>
+          <p>From raw images to a real-time helmet detector — six simple steps.</p>
+        </div>
+        <ol class="pipeline stagger reveal-group">
+          <li class="step reveal"><span class="step-num">1</span><h3>Dataset Check</h3><p>Verify PyTorch, CUDA and count images in every class.</p></li>
+          <li class="step reveal"><span class="step-num">2</span><h3>Data Split</h3><p>Stratified 70% train, 15% val, 15% test folders.</p></li>
+          <li class="step reveal"><span class="step-num">3</span><h3>Preprocessing</h3><p>Resize to 128×128, tensor convert, normalize.</p></li>
+          <li class="step reveal"><span class="step-num">4</span><h3>CNN Architecture</h3><p>3 conv blocks + fully connected classifier head.</p></li>
+          <li class="step reveal"><span class="step-num">5</span><h3>Training</h3><p>Adam optimizer, 15 epochs, best model auto-saved.</p></li>
+          <li class="step reveal"><span class="step-num">6</span><h3>Webcam Testing</h3><p>Live prediction with OpenCV on your camera feed.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ SETUP ============ -->
+    <section class="section alt" id="setup">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Before you start</span>
+          <h2>Setup &amp; Requirements</h2>
+          <p>Install the libraries once and arrange your dataset folders exactly like this.</p>
+        </div>
+
+        <div class="setup-grid stagger reveal-group">
+          <div class="panel reveal">
+            <div class="panel-head">
+              <h3><span>1</span> Install Libraries</h3>
+              <button class="copy-btn" data-copy="cmd-pip" aria-label="Copy pip install command">
+                <svg class="i i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                <svg class="i i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                <span class="copy-label">Copy</span>
+              </button>
+            </div>
+            <pre class="cmd"><code id="cmd-pip">pip install torch torchvision scikit-learn opencv-python matplotlib pillow numpy</code></pre>
+            <p class="hint">Jupyter Notebook users: if sklearn is missing, run <code class="inline">%pip install scikit-learn</code> in a cell first.</p>
+          </div>
+
+          <div class="panel reveal">
+            <div class="panel-head">
+              <h3><span>2</span> Dataset Folder Structure</h3>
+            </div>
+            <pre class="cmd tree"><code>Helmet_Dataset/
+├── Helmet/            → people WITH helmet
+├── no_person/         → frames with NO person
+└── Person_no_helmet/  → people WITHOUT helmet</code></pre>
+            <p class="hint">Running the <b>2nd Code</b> auto-creates <code class="inline">Split_Dataset/</code> with train, val and test folders.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CODES ============ -->
+    <section class="section" id="codes">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Source code</span>
+          <h2>All 7 Codes — In Order</h2>
+          <p>Every block below is exactly the code from the video. Copy it, paste it, run it.</p>
+        </div>
+
+        <div class="tip-bar reveal">
+          <span class="tip-chip">TIP</span>
+          <p>Click <b>Copy</b> on any card, then paste into Jupyter Notebook or VS Code. Run the blocks in order — from <b>1st Code</b> to <b>Testing Code</b>.</p>
+        </div>
+
+        <!-- ---------- 1st Code ---------- -->
+        <article class="code-card reveal" id="code1">
+          <div class="code-head">
+            <span class="chip">01</span>
+            <div class="code-titles">
+              <h3>1st Code</h3>
+              <p>Setup &amp; Dataset Check</p>
+            </div>
+            <span class="lang-badge">Python</span>
+            <button class="copy-btn" data-copy="code-1" aria-label="Copy 1st code">
+              <svg class="i i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              <svg class="i i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+          <pre class="code-area"><code id="code-1" class="python">import os
+import torch
+import torchvision
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
+from pathlib import Path
+
+DATASET_PATH = Path(
+    r"D:\Deeplearning-Assignment\Helmet-NoHelmet\Datasets\Helmet_Dataset"
+)
+
+print("PyTorch version:", torch.__version__)
+print("Torchvision version:", torchvision.__version__)
+print("CUDA available:", torch.cuda.is_available())
+print("\nDataset classes:")
+
+for folder in sorted(DATASET_PATH.iterdir()):
+    if folder.is_dir():
+        print(f"{folder.name}: {len(list(folder.iterdir()))} files")</code></pre>
+          <div class="code-foot">
+            <span class="meta"><b class="meta-lines">—</b> · Python 3</span>
+            <span class="note"><b>Note:</b> update DATASET_PATH to your dataset folder</span>
+            <button class="copy-mini" data-copy="code-1" aria-label="Copy 1st code">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              Copy
+            </button>
+          </div>
+        </article>
+
+        <!-- ---------- 2nd Code ---------- -->
+        <article class="code-card reveal" id="code2">
+          <div class="code-head">
+            <span class="chip">02</span>
+            <div class="code-titles">
+              <h3>2nd Code</h3>
+              <p>Train / Validation / Test Split</p>
+            </div>
+            <span class="lang-badge">Python</span>
+            <button class="copy-btn" data-copy="code-2" aria-label="Copy 2nd code">
+              <svg class="i i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              <svg class="i i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+          <pre class="code-area"><code id="code-2" class="python">from sklearn.model_selection import train_test_split
+from pathlib import Path
+import shutil
+
+# Dataset paths
+BASE_DIR = Path(r"D:\Deeplearning-Assignment\Helmet-NoHelmet")
+DATASET_PATH = BASE_DIR / "Datasets" / "Helmet_Dataset"
+SPLIT_PATH = BASE_DIR / "Datasets" / "Split_Dataset"
+
+classes = ["Helmet", "no_person", "Person_no_helmet"]
+
+# Collect image paths and labels
+image_paths = []
+labels = []
+
+for label, class_name in enumerate(classes):
+    folder = DATASET_PATH / class_name
+
+    for path in folder.iterdir():
+        if path.suffix.lower() in {".jpg", ".jpeg", ".png", ".bmp", ".webp"}:
+            image_paths.append(path)
+            labels.append(label)
+
+# 70% training, 30% temporary
+X_train, X_temp, y_train, y_temp = train_test_split(
+    image_paths, labels,
+    test_size=0.30,
+    random_state=42,
+    stratify=labels
+)
+
+# Split remaining 30% equally into validation and testing
+X_val, X_test, y_val, y_test = train_test_split(
+    X_temp, y_temp,
+    test_size=0.50,
+    random_state=42,
+    stratify=y_temp
+)
+
+# Create folders and copy images
+for split, paths, split_labels in [
+    ("train", X_train, y_train),
+    ("val", X_val, y_val),
+    ("test", X_test, y_test)
+]:
+    for path, label in zip(paths, split_labels):
+        class_name = classes[label]
+        dest = SPLIT_PATH / split / class_name
+        dest.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, dest / path.name)
+
+print("Dataset split completed!\n")
+
+for split in ["train", "val", "test"]:
+    print(f"\n{split.upper()}")
+    for class_name in classes:
+        folder = SPLIT_PATH / split / class_name
+        print(f"{class_name}: {len(list(folder.iterdir()))}")
+
+print("\nTotal images:", len(image_paths))</code></pre>
+          <div class="code-foot">
+            <span class="meta"><b class="meta-lines">—</b> · Python 3</span>
+            <span class="note"><b>Note:</b> needs scikit-learn — run <code class="inline">%pip install scikit-learn</code> first</span>
+            <button class="copy-mini" data-copy="code-2" aria-label="Copy 2nd code">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              Copy
+            </button>
+          </div>
+        </article>
+
+        <!-- ---------- 3rd Code ---------- -->
+        <article class="code-card reveal" id="code3">
+          <div class="code-head">
+            <span class="chip">03</span>
+            <div class="code-titles">
+              <h3>3rd Code</h3>
+              <p>Data Loading &amp; Preprocessing</p>
+            </div>
+            <span class="lang-badge">Python</span>
+            <button class="copy-btn" data-copy="code-3" aria-label="Copy 3rd code">
+              <svg class="i i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              <svg class="i i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+          <pre class="code-area"><code id="code-3" class="python">import torch
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+
+# Image preprocessing
+transform = transforms.Compose([
+    transforms.Resize((128, 128)),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        mean=[0.5, 0.5, 0.5],
+        std=[0.5, 0.5, 0.5]
+    )
+])
+
+# Load datasets
+train_dataset = datasets.ImageFolder(
+    SPLIT_PATH / "train", transform=transform
+)
+val_dataset = datasets.ImageFolder(
+    SPLIT_PATH / "val", transform=transform
+)
+test_dataset = datasets.ImageFolder(
+    SPLIT_PATH / "test", transform=transform
+)
+
+# Use GPU if available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+train_loader = DataLoader(
+    train_dataset, batch_size=32, shuffle=True, num_workers=0
+)
+val_loader = DataLoader(
+    val_dataset, batch_size=32, shuffle=False, num_workers=0
+)
+test_loader = DataLoader(
+    test_dataset, batch_size=32, shuffle=False, num_workers=0
+)
+
+print("Device:", device)
+print("Classes:", train_dataset.classes)
+print("Training batches:", len(train_loader))
+print("Validation batches:", len(val_loader))
+print("Testing batches:", len(test_loader))
+print("Input image shape:", train_dataset[0][0].shape)</code></pre>
+          <div class="code-foot">
+            <span class="meta"><b class="meta-lines">—</b> · Python 3</span>
+            <span class="note"><b>Note:</b> uses SPLIT_PATH created by the 2nd Code</span>
+            <button class="copy-mini" data-copy="code-3" aria-label="Copy 3rd code">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              Copy
+            </button>
+          </div>
+        </article>
+
+        <!-- ---------- 4th Code ---------- -->
+        <article class="code-card reveal" id="code4">
+          <div class="code-head">
+            <span class="chip">04</span>
+            <div class="code-titles">
+              <h3>4th Code</h3>
+              <p>Convolution · ReLU · Pooling Demo</p>
+            </div>
+            <span class="lang-badge">Python</span>
+            <button class="copy-btn" data-copy="code-4" aria-label="Copy 4th code">
+              <svg class="i i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              <svg class="i i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+          <pre class="code-area"><code id="code-4" class="python">import torch
+import torch.nn.functional as F
+import matplotlib.pyplot as plt
+
+# Get one image
+image, label = train_dataset[0]
+image = image.unsqueeze(0)  # Add batch dimension
+
+# Convert to grayscale for a simple kernel demonstration
+gray = image.mean(dim=1, keepdim=True)
+
+# Define a 3x3 edge-detection kernel
+kernel = torch.tensor([
+    [-1.,  0.,  1.],
+    [-1.,  0.,  1.],
+    [-1.,  0.,  1.]
+]).reshape(1, 1, 3, 3)
+
+# Convolution
+feature_map = F.conv2d(gray, kernel, padding=1)
+
+# ReLU activation
+relu_output = F.relu(feature_map)
+
+# Max pooling
+pool_output = F.max_pool2d(relu_output, kernel_size=2)
+
+# Display results
+fig, axes = plt.subplots(1, 5, figsize=(16, 4))
+
+axes[0].imshow(gray[0, 0].numpy(), cmap="gray")
+axes[0].set_title("Input Image")
+
+axes[1].imshow(kernel[0, 0].numpy(), cmap="gray")
+axes[1].set_title("3×3 Kernel")
+
+axes[2].imshow(feature_map[0, 0].numpy(), cmap="gray")
+axes[2].set_title("Convolution")
+
+axes[3].imshow(relu_output[0, 0].numpy(), cmap="gray")
+axes[3].set_title("ReLU")
+
+axes[4].imshow(pool_output[0, 0].numpy(), cmap="gray")
+axes[4].set_title("Max Pooling")
+
+for ax in axes:
+    ax.axis("off")
+
+plt.tight_layout()
+plt.show()
+
+print("Input shape:", gray.shape)
+print("Feature map shape:", feature_map.shape)
+print("After pooling:", pool_output.shape)</code></pre>
+          <div class="code-foot">
+            <span class="meta"><b class="meta-lines">—</b> · Python 3</span>
+            <span class="note"><b>Note:</b> just a visualization — see how a CNN looks at images</span>
+            <button class="copy-mini" data-copy="code-4" aria-label="Copy 4th code">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              Copy
+            </button>
+          </div>
+        </article>
+
+        <!-- ---------- 5th Code ---------- -->
+        <article class="code-card reveal" id="code5">
+          <div class="code-head">
+            <span class="chip">05</span>
+            <div class="code-titles">
+              <h3>5th Code</h3>
+              <p>CNN Model Architecture</p>
+            </div>
+            <span class="lang-badge">Python</span>
+            <button class="copy-btn" data-copy="code-5" aria-label="Copy 5th code">
+              <svg class="i i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              <svg class="i i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+          <pre class="code-area"><code id="code-5" class="python">import torch
+import torch.nn as nn
+
+class HelmetCNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.features = nn.Sequential(
+            # Block 1
+            nn.Conv2d(3, 16, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            # Block 2
+            nn.Conv2d(16, 32, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            # Block 3
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2)
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(64 * 16 * 16, 128),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(128, 3)
+        )
+
+    def forward(self, x):
+        x = self.features(x)
+        return self.classifier(x)
+
+
+model = HelmetCNN().to(device)
+
+print(model)
+
+total_params = sum(p.numel() for p in model.parameters())
+print(f"\nTotal trainable parameters: {total_params:,}")
+print("Model device:", next(model.parameters()).device)</code></pre>
+          <div class="code-foot">
+            <span class="meta"><b class="meta-lines">—</b> · Python 3</span>
+            <span class="note"><b>Note:</b> input 128×128 → feature size 64×16×16 before the classifier</span>
+            <button class="copy-mini" data-copy="code-5" aria-label="Copy 5th code">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              Copy
+            </button>
+          </div>
+        </article>
+
+        <!-- ---------- Training Code ---------- -->
+        <article class="code-card reveal" id="code6">
+          <div class="code-head">
+            <span class="chip">06</span>
+            <div class="code-titles">
+              <h3>Training Code</h3>
+              <p>Train the Model — 15 Epochs</p>
+            </div>
+            <span class="lang-badge">Python</span>
+            <button class="copy-btn" data-copy="code-6" aria-label="Copy training code">
+              <svg class="i i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              <svg class="i i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+          <pre class="code-area"><code id="code-6" class="python">import torch
+import torch.nn as nn
+import torch.optim as optim
+
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+EPOCHS = 15
+best_val_accuracy = 0.0
+
+history = {
+    "train_loss": [], "train_accuracy": [],
+    "val_loss": [], "val_accuracy": []
+}
+
+print("Training started...\n")
+
+for epoch in range(EPOCHS):
+    model.train()
+    train_loss, train_correct, train_total = 0.0, 0, 0
+
+    for images, labels in train_loader:
+        images, labels = images.to(device), labels.to(device)
+
+        optimizer.zero_grad()
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+
+        train_loss += loss.item() * images.size(0)
+        train_correct += (outputs.argmax(1) == labels).sum().item()
+        train_total += labels.size(0)
+
+    train_loss /= train_total
+    train_accuracy = 100 * train_correct / train_total
+
+    model.eval()
+    val_loss, val_correct, val_total = 0.0, 0, 0
+
+    with torch.no_grad():
+        for images, labels in val_loader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
+            val_loss += loss.item() * images.size(0)
+            val_correct += (outputs.argmax(1) == labels).sum().item()
+            val_total += labels.size(0)
+
+    val_loss /= val_total
+    val_accuracy = 100 * val_correct / val_total
+
+    history["train_loss"].append(train_loss)
+    history["train_accuracy"].append(train_accuracy)
+    history["val_loss"].append(val_loss)
+    history["val_accuracy"].append(val_accuracy)
+
+    if val_accuracy > best_val_accuracy:
+        best_val_accuracy = val_accuracy
+        torch.save(model.state_dict(), "best_helmet_cnn.pth")
+
+    print(
+        f"Epoch [{epoch+1:02d}/{EPOCHS}] | "
+        f"Train Loss: {train_loss:.4f} | "
+        f"Train Accuracy: {train_accuracy:.2f}% | "
+        f"Val Loss: {val_loss:.4f} | "
+        f"Val Accuracy: {val_accuracy:.2f}%"
+    )
+
+print(f"\nTraining complete!")
+print(f"Best validation accuracy: {best_val_accuracy:.2f}%")
+print("Best model saved as best_helmet_cnn.pth")</code></pre>
+          <div class="code-foot">
+            <span class="meta"><b class="meta-lines">—</b> · Python 3</span>
+            <span class="note"><b>Note:</b> saves <code class="inline">best_helmet_cnn.pth</code> — the best validation accuracy model</span>
+            <button class="copy-mini" data-copy="code-6" aria-label="Copy training code">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              Copy
+            </button>
+          </div>
+        </article>
+
+        <!-- ---------- Testing Code ---------- -->
+        <article class="code-card reveal" id="code7">
+          <div class="code-head">
+            <span class="chip">07</span>
+            <div class="code-titles">
+              <h3>Testing Code</h3>
+              <p>Real-Time Webcam Testing</p>
+            </div>
+            <span class="lang-badge">Python</span>
+            <button class="copy-btn" data-copy="code-7" aria-label="Copy testing code">
+              <svg class="i i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              <svg class="i i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+          <pre class="code-area"><code id="code-7" class="python">import cv2
+import torch
+import torch.nn as nn
+from torchvision import transforms
+from PIL import Image
+
+# Device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# Recreate the exact CNN architecture used for training
+class HelmetCNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 16, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(16, 32, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(32, 64, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2)
+        )
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(64 * 16 * 16, 128),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(128, 3)
+        )
+
+    def forward(self, x):
+        return self.classifier(self.features(x))
+
+# Load trained weights
+model = HelmetCNN().to(device)
+model.load_state_dict(torch.load(
+    r"D:\Deeplearning-Assignment\model\best_helmet_cnn.pth",
+    map_location=device,
+    weights_only=True
+))
+model.eval()
+
+# Image preprocessing used during training
+transform = transforms.Compose([
+    transforms.Resize((128, 128)),
+    transforms.ToTensor(),
+    transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+])
+
+# ImageFolder alphabetical class order
+classes = ["Helmet", "Person_no_helmet", "no_person"]
+
+# Webcam
+cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+
+if not cap.isOpened():
+    cap = cv2.VideoCapture(0)
+
+if not cap.isOpened():
+    raise RuntimeError("Cannot open webcam. Check camera permissions.")
+
+print("Webcam running. Press Q in the video window to quit.")
+
+try:
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # Convert frame to model input
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        image = Image.fromarray(rgb)
+        input_tensor = transform(image).unsqueeze(0).to(device)
+
+        with torch.inference_mode():
+            logits = model(input_tensor)
+            probs = torch.softmax(logits, dim=1)[0]
+            pred_idx = probs.argmax().item()
+            confidence = probs[pred_idx].item() * 100
+
+        prediction = classes[pred_idx]
+
+        if prediction == "Helmet":
+            label = f"Helmet Wearing Person Detected | {confidence:.1f}%"
+        elif prediction == "Person_no_helmet":
+            label = f"Person Without Helmet | {confidence:.1f}%"
+        else:
+            label = f"No Person Detected | {confidence:.1f}%"
+
+        # Display prediction on frame
+        cv2.rectangle(frame, (0, 0), (frame.shape[1], 60), (25, 25, 25), -1)
+        cv2.putText(
+            frame, label, (12, 38),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.7,
+            (0, 255, 0) if prediction == "Helmet" else (0, 200, 255),
+            2, cv2.LINE_AA
+        )
+
+        cv2.imshow("Helmet CNN - Webcam Test", frame)
+
+        if cv2.waitKey(1) &amp; 0xFF == ord("q"):
+            break
+
+finally:
+    cap.release()
+    cv2.destroyAllWindows()</code></pre>
+          <div class="code-foot">
+            <span class="meta"><b class="meta-lines">—</b> · Python 3</span>
+            <span class="note"><b>Note:</b> update the .pth path to your PC · press Q to quit the webcam</span>
+            <button class="copy-mini" data-copy="code-7" aria-label="Copy testing code">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              Copy
+            </button>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ============ HOW TO RUN ============ -->
+    <section class="section alt" id="how-to-run">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Step by step</span>
+          <h2>How to Run the Project</h2>
+          <p>Follow these steps after copying the codes.</p>
+        </div>
+
+        <ol class="run-steps stagger reveal-group">
+          <li class="reveal"><span class="run-num">1</span><div><h3>Install the libraries</h3><p>Run the pip command from the Setup section above — once only. In Jupyter use <code class="inline">%pip install scikit-learn</code> if needed.</p></div></li>
+          <li class="reveal"><span class="run-num">2</span><div><h3>Prepare the dataset</h3><p>Keep your three class folders (Helmet, no_person, Person_no_helmet) inside one dataset folder.</p></div></li>
+          <li class="reveal"><span class="run-num">3</span><div><h3>Open Jupyter Notebook or VS Code</h3><p>Create one notebook for the whole project so variables stay in memory between code blocks.</p></div></li>
+          <li class="reveal"><span class="run-num">4</span><div><h3>Copy and run in order</h3><p>1st Code → 2nd Code → 3rd Code → 4th Code → 5th Code → Training Code → Testing Code.</p></div></li>
+          <li class="reveal"><span class="run-num">5</span><div><h3>Fix the file paths</h3><p>Replace <code class="inline">D:\Deeplearning-Assignment\...</code> with your own dataset and model folder locations.</p></div></li>
+          <li class="reveal"><span class="run-num">6</span><div><h3>Test it live</h3><p>Training saves <code class="inline">best_helmet_cnn.pth</code>. The Testing Code opens your webcam — press <b>Q</b> in the video window to quit.</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ NOTES / FIXES ============ -->
+    <section class="section" id="notes">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">Troubleshooting</span>
+          <h2>Common Errors &amp; Fixes</h2>
+          <p>Quick fixes for the errors you might hit while running the project.</p>
+        </div>
+
+        <div class="notes-grid stagger reveal-group">
+          <div class="note-card reveal">
+            <h4>ModuleNotFoundError: No module named 'sklearn'</h4>
+            <p><b>Fix:</b> run <code class="inline">%pip install scikit-learn</code> in the notebook (or <code class="inline">pip install scikit-learn</code> in the terminal), then restart the kernel.</p>
+          </div>
+          <div class="note-card reveal">
+            <h4>Cannot open webcam</h4>
+            <p><b>Fix:</b> change <code class="inline">cv2.VideoCapture(1, cv2.CAP_DSHOW)</code> to <code class="inline">cv2.VideoCapture(0)</code>. The CAP_DSHOW flag is Windows-only — remove it on Mac or Linux.</p>
+          </div>
+          <div class="note-card reveal">
+            <h4>mat1 and mat2 shapes cannot be multiplied</h4>
+            <p><b>Fix:</b> keep <code class="inline">transforms.Resize((128, 128))</code> — the Linear layer expects exactly 64×16×16 = 16,384 input features.</p>
+          </div>
+          <div class="note-card reveal">
+            <h4>CUDA not available</h4>
+            <p><b>Fix:</b> that is normal on laptops without an NVIDIA GPU. Training runs on CPU — just slower. Reduce EPOCHS if needed.</p>
+          </div>
+          <div class="note-card reveal">
+            <h4>FileNotFoundError (paths)</h4>
+            <p><b>Fix:</b> your folders are different from the video. Update DATASET_PATH, SPLIT_PATH and the .pth model path in the Testing Code.</p>
+          </div>
+          <div class="note-card reveal">
+            <h4>Accuracy is low</h4>
+            <p><b>Fix:</b> train for more epochs, add more images to every class, and keep the three classes roughly balanced.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="foot-brand">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <defs>
+              <linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#818cf8"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 2.5a7.5 7.5 0 0 0-7.5 7.5v3.5h15V10A7.5 7.5 0 0 0 12 2.5Z" fill="url(#lg2)"/>
+            <rect x="2" y="15" width="20" height="3.5" rx="1.75" fill="url(#lg2)"/>
+          </svg>
+        </span>
+        <span class="brand-text">Helmet<span class="grad-text">CNN</span></span>
+      </div>
+      <p class="foot-tag">Helmet vs No-Helmet detection — an educational deep learning project built with PyTorch.</p>
+      <p class="foot-small">Run the codes in order · Update file paths to your PC · Press Q in the webcam window to quit</p>
+      <p class="copyright">© <span id="year"></span> Helmet Detection CNN — code from the YouTube tutorial, shared for learning purposes.</p>
+    </div>
+  </footer>
+
+  <!-- Back to top -->
+  <button id="toTop" aria-label="Back to top">
+    <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m0 0-6 6m6-6 6 6"/></svg>
+  </button>
+
+  <!-- Toast -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
+  <script src="script.js"></script>
+</body>
+</html>
